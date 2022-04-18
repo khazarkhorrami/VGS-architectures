@@ -13,18 +13,20 @@ def build_apc ( Xshape):
     prenet =  Dense(512, name = 'prenet')(audio_sequence)
     #prenet = BatchNormalization(axis=-1)(prenet)
 
-    # network 1 (short recieptive field (5 cells))
-    context = Conv1D(256, kernel_size=2, padding='causal')(prenet)
-    context = Conv1D(256, kernel_size=2, padding='causal')(context)
-    context = Conv1D(256, kernel_size=2, padding='causal')(context)
-    context = Conv1D(256, kernel_size=2, padding='causal')(context)
+    # network 0 (short recieptive field (5 cells)) # loss: -0.87
+    context0 = Conv1D(256, kernel_size=2, padding='causal')(prenet)
+    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
+    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
+    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
     
     # network 1 (long recieptive field: standard dilated cnn) # loss: -0.85
-    # context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=1)(prenet)
-    # context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=2)(context)
-    # context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=4)(context)
-    # context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=8)(context)
+    context1 = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=1)(prenet)
+    context1 = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=2)(context1)
+    context1 = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=4)(context1)
+    context1 = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=8)(context1)
     
+    # residual layer
+    context = Add()([context0, context1])
     # network 2 (residualized)
     # context1 = Conv1D(128, kernel_size=4, padding='causal', dilation_rate=1)(prenet)
     # context2 = Conv1D(128, kernel_size=2, padding='causal', dilation_rate=2)(context1)
