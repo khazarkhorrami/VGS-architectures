@@ -9,6 +9,8 @@ from data_preprocessing import prepare_XY , read_feature_filenames,  expand_feat
 from utils import  prepare_triplet_data ,  triplet_loss , prepare_MMS_data , mms_loss, calculate_recallat10
 from model import VGS
 import config as cfg
+
+from tensorflow.keras.optimizers import Adam, SGD
     
 class train_validate (VGS):
     
@@ -104,51 +106,55 @@ class train_validate (VGS):
         l = 5
         Xshape = (507, 40)
         predictor, apc = build_apc(Xshape) 
+        predictor.compile(optimizer=SGD(lr=1e-04), loss='mean_absolute_error')
         val_loss_init = 1000
         predictor.summary()
         
-        
-        # train apc
-        self.split = 'train'
-        self.set_feature_paths()
-        self.prepare_feature_names()
-        for capID in range(1):
-            print('......... capID ...........' , str(capID))
-            self.captionID = capID       
-            Ynames_all, Xnames_all , Znames_all = self.prepare_chunked_names(self.captionID)
-            number_of_chunks = len(Ynames_all)
-            for counter in range(number_of_chunks):
-                print('......... chunk...........' , str(counter))
-                Ynames = Ynames_all [counter]
-                Xnames = Xnames_all [counter]
-                Znames = Znames_all [counter]
-                #check = find_similar_pairs (Znames)
-                
-                Ydata, Xdata = prepare_XY (Ynames, Xnames , self.feature_path_audio , self.feature_path_image , self.length_sequence )
-                x_in = Xdata[:,0:-l,:]
-                x_out = Xdata[:,l:,:] 
-                predictor.fit(x_in, x_out , epochs=1, shuffle = True, batch_size=120)
-                   
-
-        self.split = 'val'
-        self.set_feature_paths()
-        self.prepare_feature_names()
-        for capID in range(1):
-            print('......... capID ...........' , str(capID))
-            self.captionID = capID       
-            Ynames_all, Xnames_all , Znames_all = self.prepare_chunked_names(self.captionID)
-            number_of_chunks = len(Ynames_all)
-            for counter in range(number_of_chunks):
-                print('......... chunk...........' , str(counter))
-                Ynames = Ynames_all [counter]
-                Xnames = Xnames_all [counter]
-                Znames = Znames_all [counter]
-                #check = find_similar_pairs (Znames)
-                
-                Ydata, Xdata = prepare_XY (Ynames, Xnames , self.feature_path_audio , self.feature_path_image , self.length_sequence )
-                x_in = Xdata[:,0:-l,:]
-                x_out = Xdata[:,l:,:] 
-                val_loss = predictor.evaluate(x_in, x_out, batch_size=120)
+        for epoch in range(5):
+            print('############## epoch ############', str(epoch) )
+            # train apc
+            # if epoch ==3:
+            #     predictor.compile(optimizer=SGD(lr=1e-04), loss='mean_absolute_error')
+            self.split = 'train'
+            self.set_feature_paths()
+            self.prepare_feature_names()
+            for capID in range(5):
+                print('......... capID ...........' , str(capID))
+                self.captionID = capID       
+                Ynames_all, Xnames_all , Znames_all = self.prepare_chunked_names(self.captionID)
+                number_of_chunks = len(Ynames_all)
+                for counter in range(number_of_chunks): # number_of_chunks
+                    print('......... chunk...........' , str(counter))
+                    Ynames = Ynames_all [counter]
+                    Xnames = Xnames_all [counter]
+                    Znames = Znames_all [counter]
+                    #check = find_similar_pairs (Znames)
+                    
+                    Ydata, Xdata = prepare_XY (Ynames, Xnames , self.feature_path_audio , self.feature_path_image , self.length_sequence )
+                    x_in = Xdata[:,0:-l,:]
+                    x_out = Xdata[:,l:,:] 
+                    predictor.fit(x_in, x_out , epochs=1, shuffle = True, batch_size=120)
+                       
+            # validate apc
+            self.split = 'val'
+            self.set_feature_paths()
+            self.prepare_feature_names()
+            for capID in range(5):
+                print('......... capID ...........' , str(capID))
+                self.captionID = capID       
+                Ynames_all, Xnames_all , Znames_all = self.prepare_chunked_names(self.captionID)
+                number_of_chunks = len(Ynames_all)
+                for counter in range(number_of_chunks):
+                    print('......... chunk...........' , str(counter))
+                    Ynames = Ynames_all [counter]
+                    Xnames = Xnames_all [counter]
+                    Znames = Znames_all [counter]
+                    #check = find_similar_pairs (Znames)
+                    
+                    Ydata, Xdata = prepare_XY (Ynames, Xnames , self.feature_path_audio , self.feature_path_image , self.length_sequence )
+                    x_in = Xdata[:,0:-l,:]
+                    x_out = Xdata[:,l:,:] 
+                    val_loss = predictor.evaluate(x_in, x_out, batch_size=120)
         
     def train_model(self): 
         self.split = 'train'

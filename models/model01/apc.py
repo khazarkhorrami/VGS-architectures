@@ -6,22 +6,32 @@
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import  Input, Reshape, Dense, Dropout, BatchNormalization, dot, Softmax, Permute, UpSampling1D, Masking
 from tensorflow.keras.layers import  MaxPooling1D,AveragePooling1D,  Conv1D, Concatenate, ReLU, Add, Multiply, GRU
-from tensorflow.keras.optimizers import Adam, SGD
 
+# activation='relu'
 def build_apc ( Xshape):      
     audio_sequence = Input(shape=Xshape) #Xshape = (995, 40)
-    prenet =  Conv1D(128,  kernel_size=1, name = 'prenet', activation='relu')(audio_sequence)
-    prenet = BatchNormalization(axis=-1)(prenet)
-    #prenet = Conv1D(128,3, activation='relu', padding='causal')(prenet1)      
-    #context = GRU(256, return_sequences=True, name = 'GRU')(prenet3) # (N, 1000, 256)
-    context = Conv1D(128, kernel_size=5, padding='causal', dilation_rate=1, activation='relu' , name = 'context1')(prenet)
-    context = Conv1D(128, kernel_size=5, padding='causal', dilation_rate=2, activation='relu', name = 'context2')(context)
-    context = Conv1D(128, kernel_size=5, padding='causal', dilation_rate=4, activation='relu', name = 'context3')(context)
-  
-    postnet_audio =  Conv1D(40,  kernel_size=1, name = 'postnet')(context)
+    prenet =  Dense(512, name = 'prenet')(audio_sequence)
+    #prenet = BatchNormalization(axis=-1)(prenet)
+    
+    # network 1 (standard)
+    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=1)(prenet)
+    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=2)(context)
+    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=4)(context)
+    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=8)(context)
+    
+    # network 2 (residualized)
+    # context1 = Conv1D(128, kernel_size=4, padding='causal', dilation_rate=1)(prenet)
+    # context2 = Conv1D(128, kernel_size=2, padding='causal', dilation_rate=2)(context1)
+    # context_12 = Add()([context1,context2])
+    # context3 = Conv1D(128, kernel_size=2, padding='causal', dilation_rate=4)(context_12)
+    # context_123 = Add()([context_12,context3])
+    # context4 = Conv1D(128, kernel_size=2, padding='causal', dilation_rate=8)(context_123)
+    # context = Add()([context_123,context4])
+    
+    postnet_audio =  Conv1D(40, kernel_size=1 , name = 'postnet')(context)
 
     predictor = Model(audio_sequence, postnet_audio)
-    predictor.compile(optimizer=SGD(lr=1e-03), loss='mean_absolute_error')
+    
     apc = Model(audio_sequence, context)
    
     return predictor, apc

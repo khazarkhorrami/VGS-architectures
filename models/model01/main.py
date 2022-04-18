@@ -17,7 +17,6 @@ from train import train_validate
 obj = train_validate ()
 obj.run_apc()
 
-
 # to check some examples of similarity search
 # Znames , check = obj.test_similarities()
 # i = 15
