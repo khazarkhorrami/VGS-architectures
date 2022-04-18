@@ -18,9 +18,8 @@ def build_apc ( Xshape):
     # network 0 (short recieptive field (7 kernel = 2)) # loss: 
     context0 = Conv1D(256, kernel_size=2, padding='causal')(prenet)
     context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
-    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
-    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
-    context0 = Conv1D(256, kernel_size=2, padding='causal')(context0)
+    context0 = Conv1D(256, kernel_size=3, padding='causal')(context0)
+    context0 = Conv1D(256, kernel_size=3, padding='causal')(context0)
     
     # network 1 (long recieptive field: standard dilated cnn) # loss: -0.85
     # context1 = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=1)(prenet)
