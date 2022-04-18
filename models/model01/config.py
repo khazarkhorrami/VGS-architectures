@@ -4,7 +4,7 @@
 
 paths = {
   "feature_path_SPOKENCOCO": "../../../features/SPOKEN-COCO/" , #"/run/media/hxkhkh/khazar_data_1/khazar/features/coco/SPOKEN-COCO/"
-  "feature_path_MSCOCO": "../../features/MSCOCO/" , # "/run/media/hxkhkh/khazar_data_1/khazar/features/coco/MSCOCO/"
+  "feature_path_MSCOCO": "../../../features/MSCOCO/" , # "/run/media/hxkhkh/khazar_data_1/khazar/features/coco/MSCOCO/"
   "json_path_SPOKENCOCO" : "../../../data/SPOKEN-COCO/",
   "dataset_name" : "SPOKEN-COCO",
   "modeldir": "../../../model/model01/",

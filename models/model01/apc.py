@@ -14,10 +14,10 @@ def build_apc ( Xshape):
     #prenet = BatchNormalization(axis=-1)(prenet)
     
     # network 1 (standard)
-    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=1)(prenet)
-    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=2)(context)
-    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=4)(context)
-    context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=8)(context)
+    context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=1)(prenet)
+    context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=2)(context)
+    context = Conv1D(256, kernel_size=4, padding='causal', dilation_rate=4)(context)
+    #context = Conv1D(256, kernel_size=2, padding='causal', dilation_rate=8)(context)
     
     # network 2 (residualized)
     # context1 = Conv1D(128, kernel_size=4, padding='causal', dilation_rate=1)(prenet)

@@ -11,6 +11,7 @@ from model import VGS
 import config as cfg
 
 from tensorflow.keras.optimizers import Adam, SGD
+import tensorflow as tf
     
 class train_validate (VGS):
     
@@ -106,11 +107,11 @@ class train_validate (VGS):
         l = 5
         Xshape = (507, 40)
         predictor, apc = build_apc(Xshape) 
-        predictor.compile(optimizer=SGD(lr=1e-04), loss='mean_absolute_error')
+        predictor.compile(optimizer=SGD(lr=1e-04), loss=tf.keras.losses.CosineSimilarity(axis=1))#'mean_absolute_error')
         val_loss_init = 1000
         predictor.summary()
         
-        for epoch in range(5):
+        for epoch in range(10):
             print('############## epoch ############', str(epoch) )
             # train apc
             # if epoch ==3:
