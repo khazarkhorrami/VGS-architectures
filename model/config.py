@@ -7,20 +7,20 @@ paths = {
   "feature_path_MSCOCO": "../../../features/MSCOCO/", #  "/run/media/hxkhkh/khazar_data_1/khazar/features/coco/MSCOCO/", # 
   "json_path_SPOKENCOCO" : "../../../data/SPOKEN-COCO/",
   "dataset_name" : "SPOKEN-COCO",
-  "modeldir": "../../model/apc/wavenet_l5_f500/",
+  "models_dir": "../../models/",
 }
 
 
 action_parameters = {
-  "use_pretrained": False,
-  "training_mode": True,
+  "use_pretrained": True,
+  "training_mode": False,
   "evaluating_mode": True,
-  "save_model":False,
+  "save_model":True,
   "save_best_recall" : False,
   "save_best_loss" : True,
-  "find_recall" : True,
+  "find_recall" : False,
   "number_of_epochs" : 30,
-  "chunk_length":1000
+  "chunk_length":10000
 }
 
 model_settings = {

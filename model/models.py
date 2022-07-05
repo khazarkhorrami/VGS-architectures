@@ -36,7 +36,7 @@ class VGS:
         return history.history['loss'][0]
      
     def validate_model (self, vgs_model, Yin, Xin , bin_target):
-        evaluation_loss = self.vgs_model.evaluate([Yin, Xin ], bin_target, batch_size=120)
+        evaluation_loss = vgs_model.evaluate([Yin, Xin ], bin_target, batch_size=120)
         return evaluation_loss
     
     def test_model (self,vgs_model, Yin, Xin , bin_target):
@@ -66,7 +66,7 @@ class VGS:
             Ynames = Ynames_all [counter_chunk]
             Xnames = Xnames_all [counter_chunk]
             Znames = Znames_all [counter_chunk]
-            Yin, Xin, bin_target = self.prepare_data(Ynames, Xnames , Znames, feature_path_audio , feature_path_image , length_sequence , loss)
+            Yin, Xin, bin_target = self.prepare_data(Ynames, Xnames , Znames, feature_path_audio , feature_path_image , length_sequence, normalize , loss)
             evaluation_loss_chunk = self.validate_model(vgs_model, Yin, Xin , bin_target)
             evaluation_loss_all_chunks += evaluation_loss_chunk
             

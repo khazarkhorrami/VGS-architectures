@@ -2,8 +2,8 @@
 
 import config as cfg
 from data import Data
-from model import CNN0, CNNatt, AVLnet
-from run import VGS
+from networks import CNN0, CNNatt, AVLnet
+from models import VGS
 
 
 import os
@@ -12,7 +12,7 @@ import scipy.io
 from matplotlib import pyplot as plt
 
 
-class RUN_experiment():
+class RUN_vgs():
     
     def __init__(self):
         
@@ -21,7 +21,8 @@ class RUN_experiment():
         self.feature_path_MSCOCO = cfg.paths['feature_path_MSCOCO']
         self.json_path_SPOKENCOCO = cfg.paths["json_path_SPOKENCOCO"]
         self.dataset_name = cfg.paths['dataset_name']
-        self.model_dir = cfg.paths['modeldir']
+        self.models_dir = cfg.paths['models_dir']
+        
         
         # action parameters
         self.use_pretrained = cfg.action_parameters['use_pretrained']
@@ -49,9 +50,10 @@ class RUN_experiment():
         self.split = 'train'
         self.captionID = 0
         self.feature_names = []
-        self.normalize = True
+        self.normalize = True      
+        self.model_dir = os.path.join(self.models_dir, self.model_name)
         
-        
+
         self.current_data = Data(self.dataset_name, self.chunk_length, self.feature_path_SPOKENCOCO, self.feature_path_MSCOCO, self.json_path_SPOKENCOCO)
         
         if self.model_name =="CNN0":
@@ -60,8 +62,9 @@ class RUN_experiment():
             self.current_model = CNNatt(self.input_dim)
         elif self.model_name == "AVLnet":
             self.current_model = AVLnet(self.input_dim)   
-    
+        
         self.vgs = VGS()
+        
         
     def set_feature_paths (self):
         if self.dataset_name == "SPOKEN-COCO":
@@ -71,7 +74,7 @@ class RUN_experiment():
     def initialize_model_parameters(self):
         
         if self.use_pretrained:
-            data = scipy.io.loadmat(self.model_dir + 'valtrainloss.mat', variable_names=['allepochs_valloss','allepochs_trainloss','all_avRecalls', 'all_vaRecalls'])
+            data = scipy.io.loadmat(os.path.join (self.model_dir , 'valtrainloss.mat'), variable_names=['allepochs_valloss','allepochs_trainloss','all_avRecalls', 'all_vaRecalls'])
             allepochs_valloss = data['allepochs_valloss'][0]
             allepochs_trainloss = data['allepochs_trainloss'][0]
             all_avRecalls = data['all_avRecalls']#[0]
@@ -90,11 +93,11 @@ class RUN_experiment():
             all_vaRecalls = []
             recall_indicator = 0
             val_indicator = 1000
-            
+
         saving_params = [allepochs_valloss, allepochs_trainloss, all_avRecalls, all_vaRecalls, val_indicator , recall_indicator ]       
         return saving_params
     
-    def save_model(self, initialized_output , training_output, validation_output):
+    def save_model(self, vgs_model , initialized_output , training_output, validation_output):
         
         os.makedirs(self.model_dir, exist_ok=1)
         [allepochs_valloss, allepochs_trainloss, all_avRecalls, all_vaRecalls, val_indicator , recall_indicator ] = initialized_output
@@ -105,22 +108,18 @@ class RUN_experiment():
             epoch_recall = ( epoch_recall_av + epoch_recall_va ) / 2
             if epoch_recall >= recall_indicator: 
                 recall_indicator = epoch_recall
-                # weights = vgs_model.get_weights()
-                # vgs_model.set_weights(weights)
-                self.vgs_model.save_weights('%smodel_weights.h5' % self.model_dir)
+                vgs_model.save_weights(os.path.join(self.model_dir, 'model_weights.h5'))#'%smodel_weights.h5' % self.model_dir)
         else :
             if epoch_valloss <= val_indicator: 
                 val_indicator = epoch_valloss
-                # weights = vgs_model.get_weights()
-                # vgs_model.set_weights(weights)
-                self.vgs_model.save_weights('%smodel_weights.h5' % self.model_dir)
+                vgs_model.save_weights(os.path.join(self.model_dir, 'model_weights.h5'))
                       
         allepochs_trainloss.append(training_output)  
         allepochs_valloss.append(epoch_valloss)
         if self.find_recall: 
             all_avRecalls.append(epoch_recall_av)
             all_vaRecalls.append(epoch_recall_va)
-        save_file = self.model_dir + 'valtrainloss.mat'
+        save_file = os.path.join(self.model_dir , 'valtrainloss.mat')
         scipy.io.savemat(save_file, 
                           {'allepochs_valloss':allepochs_valloss,'allepochs_trainloss':allepochs_trainloss,'all_avRecalls':all_avRecalls,'all_vaRecalls':all_vaRecalls })  
         
@@ -136,7 +135,7 @@ class RUN_experiment():
             plt.ylabel(plot_names[plot_counter])
             plt.grid()
 
-        plt.savefig(self.model_dir + 'evaluation_plot.pdf', format = 'pdf')
+        plt.savefig(os.path.join(self.model_dir, 'evaluation_plot.pdf'), format = 'pdf')
 
 
     def train_vgs(self, vgs_model):
@@ -149,8 +148,8 @@ class RUN_experiment():
     def evaluate_vgs(self, vgs_model): 
         self.split = 'val'
         Ynames_all, Xnames_all , Znames_all = self.current_data.prepare_data_names(self.split, self.captionID)
-        train_loss = self.vgs.iterate_and_train(vgs_model, Ynames_all, Xnames_all , Znames_all , self.feature_path_audio , self.feature_path_image , self.length_sequence, self.normalize , self.loss)
-        return train_loss
+        val_loss = self.vgs.iterate_and_validate(vgs_model, Ynames_all, Xnames_all , Znames_all , self.feature_path_audio , self.feature_path_image , self.length_sequence, self.normalize , self.loss)
+        return [0,0,val_loss]
         
     def __call__(self):
         self.set_feature_paths()
@@ -158,7 +157,7 @@ class RUN_experiment():
         self.vgs.compile_model (vgs_model, self.loss)      
         initialized_output = self.initialize_model_parameters()    
         if self.use_pretrained:
-            self.vgs_model.load_weights(self.model_dir + 'model_weights.h5')
+            vgs_model.load_weights(os.path.join (self.model_dir , 'model_weights.h5'))
 
         for epoch_counter in numpy.arange(2):
             self.epoch_counter = epoch_counter
@@ -176,7 +175,7 @@ class RUN_experiment():
                 validation_output = [0, 0 , 0 ]
                 
             if self.saving_mode:
-                self.save_model(initialized_output, training_output, validation_output)    
+                self.save_model(vgs_model, initialized_output, training_output, validation_output)    
 
-run_object = RUN_experiment()
+run_object = RUN_vgs()
 run_object()
