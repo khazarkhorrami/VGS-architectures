@@ -152,14 +152,16 @@ class RUN_vgs():
         return [0,0,val_loss]
         
     def __call__(self):
-        self.set_feature_paths()
+        
+        self.set_feature_paths()      
+        initialized_output = self.initialize_model_parameters()   
+        
         vgs_model, visual_embedding_model, audio_embedding_model = self.current_model.build_model() 
-        self.vgs.compile_model (vgs_model, self.loss)      
-        initialized_output = self.initialize_model_parameters()    
+        self.vgs.compile_model (vgs_model, self.loss)
         if self.use_pretrained:
             vgs_model.load_weights(os.path.join (self.model_dir , 'model_weights.h5'))
 
-        for epoch_counter in numpy.arange(2):
+        for epoch_counter in numpy.arange(self.number_of_epochs):
             self.epoch_counter = epoch_counter
             print('......... epoch ...........' , str(epoch_counter))
             

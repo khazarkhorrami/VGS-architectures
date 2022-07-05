@@ -13,13 +13,13 @@ paths = {
 
 action_parameters = {
   "use_pretrained": True,
-  "training_mode": False,
+  "training_mode": True,
   "evaluating_mode": True,
   "save_model":True,
   "save_best_recall" : False,
   "save_best_loss" : True,
   "find_recall" : False,
-  "number_of_epochs" : 30,
+  "number_of_epochs" : 1,
   "chunk_length":10000
 }
 
