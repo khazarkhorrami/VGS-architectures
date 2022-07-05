@@ -12,21 +12,21 @@ paths = {
 
 
 action_parameters = {
-  "use_pretrained": True,
+  "use_pretrained": False,
   "training_mode": True,
   "evaluating_mode": True,
-  "save_model":True,
+  "save_model":False,
   "save_best_recall" : False,
   "save_best_loss" : True,
   "find_recall" : True,
   "number_of_epochs" : 30,
-  "chunk_length":10000
+  "chunk_length":1000
 }
 
-feature_settings = {
-    "model_name": "CNNatt_dual",
+model_settings = {
+    "model_name": "CNN0",
     "model_subname": "v0",
-    "length_sequence" : 200,
+    "length_sequence" : 512,
     "Xshape" : (512,40),
     "Yshape" : (14,14,512)
     }

@@ -1,107 +1,74 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jul  4 16:08:40 2022
+The parent VGS class
 
-@author: hxkhkh
+all other action classes are children of VGS
+
 """
 
-import config as cfg
-from data import Data
+from tensorflow import keras
+from utils import  prepare_triplet_data ,  triplet_loss , prepare_MMS_data , mms_loss_normal, mms_loss_hard, calculate_recallat10
+from data_preprocessing import prepare_XY , read_feature_filenames,  expand_feature_filenames2, prepareX_apc
 
-class RUN_experiment():
+class VGS:
     
     def __init__(self):
-        
-        # paths
-        self.feature_path_SPOKENCOCO = cfg.paths['feature_path_SPOKENCOCO']
-        self.feature_path_MSCOCO = cfg.paths['feature_path_MSCOCO']
-        self.json_path_SPOKENCOCO = cfg.paths["json_path_SPOKENCOCO"]
-        self.dataset_name = cfg.paths['dataset_name']
-        self.model_dir = cfg.paths['modeldir']
-        
-        # action parameters
-        self.use_pretrained = cfg.action_parameters['use_pretrained']
-        self.training_mode = cfg.action_parameters['training_mode']
-        self.evaluating_mode = cfg.action_parameters['evaluating_mode']
-        self.saving_mode = cfg.action_parameters['save_model']
-        self.save_best_recall = cfg.action_parameters['save_best_recall']
-        self.save_best_loss = cfg.action_parameters['save_best_loss']
-        self.find_recall = cfg.action_parameters['find_recall']
-        self.number_of_epochs = cfg.action_parameters['number_of_epochs']
-        self.chunk_length = cfg.action_parameters['chunk_length']
-        
-        # model setting
-        self.model_name = cfg.feature_settings ['model_name']
-        self.model_subname = cfg.feature_settings ['model_subname']
-        self.length_sequence = cfg.feature_settings['length_sequence']
-        self.Xshape = cfg.feature_settings['Xshape']
-        self.Yshape = cfg.feature_settings['Yshape']
-        self.input_dim = [self.Xshape,self.Yshape] 
-        self.loss = "MMS"
-        self.temperature = 0.1
-        self.epoch_counter = 0
-        
-        #self.length_sequence = self.Xshape[0]
-        self.split = 'train'
-        self.captionID = 0
-        self.feature_names = []
-        
-        
-        self.data = Data(self.dataset_name, self.chunk_length, self.feature_path_SPOKENCOCO, self.feature_path_MSCOCO, self.json_path_SPOKENCOCO)
-
-    def iterate_data(self, split, captionID):
-        
-        Ynames_all, Xnames_all , Znames_all = self.data.prepare_data_names(self.split, self.captionID)
-        self.number_of_chunks = len(Ynames_all)
-        
-        for counter_chunk in range(self.number_of_chunks): 
+        pass
+    
+    def compile_model (self, vgs_model, loss):
+        if loss == "MMS":      
+            vgs_model.compile(loss = mms_loss_normal, optimizer= keras.optimizers.Adam(lr=1e-03))         
+        elif loss == "Triplet":
+            vgs_model.compile(loss=triplet_loss, optimizer= keras.optimizers.Adam(lr=1e-04))
+        print(vgs_model.summary())
+       
+    def prepare_data(self, Ynames, Xnames , Znames, feature_path_audio , feature_path_image , length_sequence , normalize ,loss ):      
+        Ydata, Xdata = prepare_XY (Ynames, Xnames , feature_path_audio , feature_path_image , length_sequence , normalize)
+        if loss == "MMS":
+            [Yin, Xin] , bin_target = prepare_MMS_data (Ydata, Xdata , shuffle_data = False)
+        if loss == "Triplet":                   
+            Yin, Xin, bin_target = prepare_triplet_data (Ydata, Xdata)
+        return Yin, Xin, bin_target
+    
+    def train_model(self, vgs_model, Yin, Xin , bin_target):            
+        history = vgs_model.fit([Yin, Xin ], bin_target, shuffle=False, epochs=1,batch_size=256)                      
+        return history.history['loss'][0]
+     
+    def validate_model (self, vgs_model, Yin, Xin , bin_target):
+        evaluation_loss = self.vgs_model.evaluate([Yin, Xin ], bin_target, batch_size=256)
+        return evaluation_loss
+    
+    def test_model (self,vgs_model, Yin, Xin , bin_target):
+        preds = self.vgs_model.predict([Yin, Xin ], bin_target, batch_size=256)
+        return preds
+    
+    def iterate_and_train(self, vgs_model, Ynames_all, Xnames_all , Znames_all , feature_path_audio , feature_path_image , length_sequence , normalize, loss):
+        number_of_chunks = len(Ynames_all)
+        train_loss_all_chunks = 0
+        for counter_chunk in range(number_of_chunks): 
         
             Ynames = Ynames_all [counter_chunk]
             Xnames = Xnames_all [counter_chunk]
             Znames = Znames_all [counter_chunk]
-        
-        return Ynames, Xnames, Znames
-    
-    def prepare_model (self):
-        pass
-    
-    def train_model(self):
-        #vgs.train_model()
-        pass
-    
-    def validate_model (self):
-        pass
-    
-    def test_model(self):
-        pass
-    
-    # def __call__(self):
-    
-    #     self.define_and_compile_models()
-  
-    #     initialized_output = self.initialize_model_parameters()
-        
-    #     if self.use_pretrained:
-    #         self.vgs_model.load_weights(self.model_dir + 'model_weights.h5')
-
-    #     for epoch_counter in numpy.arange(self.number_of_epochs):
-    #         self.epoch_counter = epoch_counter
-    #         print('......... epoch ...........' , str(epoch_counter))
+            Yin, Xin, bin_target = self.prepare_data(Ynames, Xnames , Znames, feature_path_audio , feature_path_image , length_sequence , normalize , loss)
+            train_loss_chunk = self.train_model(vgs_model, Yin, Xin , bin_target)
+            train_loss_all_chunks += train_loss_chunk
             
-    #         if self.training_mode:           
-    #             training_output = self.train_model()           
-                    
-    #         else:
-    #             training_output = 0
-                
-    #         if self.evaluating_mode:
-    #             validation_output = self.evaluate_model()
-    #         else: 
-    #             validation_output = [0, 0 , 0 ]
-                
-    #         if self.saving_mode:
-    #             self.save_model(initialized_output, training_output, validation_output)    
-
-run_object = RUN_experiment()
-Ynames, Xnames, Znames = run_object.iterate_data(split = 'train', captionID = 0)
+        train_loss = train_loss_all_chunks / number_of_chunks
+        return train_loss
+    
+    def iterate_and_validate(self, vgs_model, Ynames_all, Xnames_all , Znames_all , feature_path_audio , feature_path_image , length_sequence, normalize , loss):
+        number_of_chunks = len(Ynames_all)
+        evaluation_loss_all_chunks = 0
+        for counter_chunk in range(number_of_chunks): 
+        
+            Ynames = Ynames_all [counter_chunk]
+            Xnames = Xnames_all [counter_chunk]
+            Znames = Znames_all [counter_chunk]
+            Yin, Xin, bin_target = self.prepare_data(Ynames, Xnames , Znames, feature_path_audio , feature_path_image , length_sequence , loss)
+            evaluation_loss_chunk = self.validate_model(vgs_model, Yin, Xin , bin_target)
+            evaluation_loss_all_chunks += evaluation_loss_chunk
+            
+        evaluation_loss = evaluation_loss_all_chunks / number_of_chunks
+        return evaluation_loss

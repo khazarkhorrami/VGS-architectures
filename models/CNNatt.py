@@ -7,7 +7,9 @@ from tensorflow.keras.layers import  Input, Reshape, Dense, Dropout, BatchNormal
 from tensorflow.keras.layers import  MaxPooling1D,  Conv1D,Conv2D
 from tensorflow.keras.layers import Softmax, Permute, AveragePooling1D, Concatenate
 
-class VGS:
+from vgs import VGS
+
+class CNNatt(VGS):
     
     def __init__(self,model_name, model_subname, input_dim):
         

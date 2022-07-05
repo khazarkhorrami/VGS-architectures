@@ -10,9 +10,9 @@ from tensorflow.keras.layers import  MaxPooling1D, MaxPooling2D, MaxPooling3D, A
 from tensorflow.keras.optimizers import Adam
 
 
+from vgs import VGS
 
-
-class AVnet():
+class AVnet(VGS):
     
     def __init__(self, model_config):
         self.audio_model_name = model_config["audio_model_name"]
