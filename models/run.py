@@ -32,15 +32,15 @@ class VGS:
         return Yin, Xin, bin_target
     
     def train_model(self, vgs_model, Yin, Xin , bin_target):            
-        history = vgs_model.fit([Yin, Xin ], bin_target, shuffle=False, epochs=1,batch_size=256)                      
+        history = vgs_model.fit([Yin, Xin ], bin_target, shuffle=False, epochs=1,batch_size=120)                      
         return history.history['loss'][0]
      
     def validate_model (self, vgs_model, Yin, Xin , bin_target):
-        evaluation_loss = self.vgs_model.evaluate([Yin, Xin ], bin_target, batch_size=256)
+        evaluation_loss = self.vgs_model.evaluate([Yin, Xin ], bin_target, batch_size=120)
         return evaluation_loss
     
     def test_model (self,vgs_model, Yin, Xin , bin_target):
-        preds = self.vgs_model.predict([Yin, Xin ], bin_target, batch_size=256)
+        preds = self.vgs_model.predict([Yin, Xin ])
         return preds
     
     def iterate_and_train(self, vgs_model, Ynames_all, Xnames_all , Znames_all , feature_path_audio , feature_path_image , length_sequence , normalize, loss):
