@@ -13,7 +13,7 @@ paths = {
 
 action_parameters = {
   "use_pretrained": True,
-  "training_mode": True,
+  "training_mode": False,
   "evaluating_mode": True,
   "save_model":True,
   "save_best_recall" : False,
