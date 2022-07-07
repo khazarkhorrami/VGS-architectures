@@ -1,14 +1,4 @@
 
-# import keras
-# from keras import backend as K
-# from keras.layers import Lambda
-# from keras.models import Model
-# from keras.layers import  Input, Reshape, Dense, Dropout, BatchNormalization
-# from keras.layers import  MaxPooling1D,  Conv1D,Conv2D
-# from keras.layers import Softmax, Permute, AveragePooling1D, Concatenate
-
-
-
 from tensorflow import keras
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Lambda
@@ -16,6 +6,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import  Input, Reshape, Dense, Dropout, BatchNormalization, Masking, Conv3D, MaxPooling3D
 from tensorflow.keras.layers import  MaxPooling1D,  Conv1D,Conv2D, ReLU, Add
 from tensorflow.keras.layers import Softmax, Permute, AveragePooling1D, Concatenate, dot
+
 
 class CNN0:
     

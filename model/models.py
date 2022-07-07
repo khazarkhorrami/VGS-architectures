@@ -1,15 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-The parent VGS class
 
-all other action classes are children of VGS
-
-"""
 
 from tensorflow import keras
-from utils import  prepare_triplet_data ,  triplet_loss , prepare_MMS_data , mms_loss_normal, mms_loss_hard, calculate_recallat10
-from data_preprocessing import prepare_XY , read_feature_filenames,  expand_feature_filenames2, prepareX_apc
+from loss import  prepare_triplet_data ,  triplet_loss , prepare_MMS_data , mms_loss_normal, mms_loss_hard
+from recall import calculate_recallat10
+from features import prepare_XY , read_feature_filenames,  expand_feature_filenames2, prepareX_apc
 
 class VGS:
     
